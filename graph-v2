@@ -1,0 +1,265 @@
+<html ng-app="myModule">
+
+<head>
+  <meta charset="utf-8" />
+  <title> Highcharts directive demo </title>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+  <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+</head>
+
+<body ng-controller="myController">
+
+  <hc-chart options="chartOptions">Placeholder for generic chart</hc-chart>
+
+  <script>
+    angular.module('myModule', [])
+      // Directive for generic chart, pass in chart options
+      .directive('hcChart', function() {
+        return {
+          restrict: 'E',
+          template: '<div></div>',
+          scope: {
+            options: '='
+          },
+          link: function(scope, element) {
+            Highcharts.chart(element[0], scope.options);
+          }
+        };
+      })
+      .controller('myController', function($scope) {
+        $scope.furnaceNames = [{
+          name: 'SQF1',
+          channels: 'CH1,CH3,CH2'
+        }, {
+          name: 'SQF2',
+          channels: 'CH4,CH6,CH5,'
+        }, {
+          name: 'TF1',
+          channels: 'CH7,CH2'
+        }, {
+          name: 'TF2',
+          channels: 'CH8,CH2'
+        }, {
+          name: 'TF3',
+          channels: 'CH9,CH2'
+        }, {
+          name: 'GCF',
+          channels: 'CH10,CH12,CH11'
+        }, {
+          name: 'THF1',
+          channels: 'CH13,CH2'
+        }, {
+          name: 'THF2',
+          channels: 'CH14,CH2'
+        }]
+      $scope.serise1 = [1, 2, 3, 4]
+              $scope.serise2 = [1.1, 2.1, 3.1, 4.1]
+              $scope.serise3 = [11, 12, 13, 14]
+              $scope.serise4 = [11.1, 12.1, 13.1, 14.1]
+              $scope.serise5 = [21, 22, 23, 24]
+              $scope.serise6 = [21.1, 22.1, 23.1, 24.1]
+        $scope.categories = ['2022-04-15 12:46:00', '2022-04-15 12:46:00', '2022-04-15 12:46:00', '2022-04-15 12:46:00']
+        $scope.myFunc = function() {
+          var serise1=[]
+          
+          fetch('https://mocki.io/v1/4835525a-1048-4f39-8624-05de8c88c364')
+            .then((resp) => resp.json())
+            .then(function(data) {
+              console.log(JSON.stringify(data));
+              for (var item in data) {
+                console.log(item, data[item]);
+                serise1.push(item.setMv);
+                $scope.serise1 =serise1;
+              }
+              
+            });
+        };
+        // Sample options for first chart
+        $scope.chartOptions = {
+          chart: {
+            zoomType: 'x'
+          },
+          title: {
+            text: 'Time-Temprature-Carbon Potential'
+          },
+          tooltip: {
+            shared: true,
+            crosshairs: true
+          },
+          xAxis: {
+            type: 'category',
+            gridLineWidth: 0.2,
+            categories: $scope.categories,
+          },
+          yAxis: [{ // Primary yAxis
+            labels: {
+              format: '<b>{value}°C</b>',
+              style: {
+                // color: Highcharts.getOptions().colors[5]
+              }
+            },
+            title: {
+              text: '<b>Temperature</b>',
+              style: {
+                // color: Highcharts.getOptions().colors[5]
+              }
+            }
+          }, { // Secondary yAxis
+            title: {
+              text: '<b>CP</b>',
+              style: {
+                //  color: Highcharts.getOptions().colors[5]
+              }
+            },
+            labels: {
+              format: '<b>{value} %</b>',
+              style: {
+                // color: Highcharts.getOptions().colors[5]
+              }
+            },
+            opposite: true
+          }],
+          exporting: {
+            sourceWidth: 3000,
+            sourceHeight: 700,
+            scale: 1
+          },
+          plotOptions: {
+            line: {
+              dataLabels: {
+                enabled: true
+              }
+            }
+          },
+          series: [{
+              name: 'Furnace Temprature ',
+              color: Highcharts.getOptions().colors[5],
+              data: $scope.serise1,
+              category: $scope.category
+            },
+            {
+              name: 'Set Furnace Temprature',
+              color: Highcharts.getOptions().colors[5],
+              data: $scope.serise2
+            },
+            {
+              name: 'Oil Temprature',
+              color: Highcharts.getOptions().colors[7],
+              data: $scope.serise5
+            },
+            {
+              name: 'Set Oil Temprature',
+              color: Highcharts.getOptions().colors[7],
+              data: $scope.serise6
+            }, {
+              name: 'CP',
+              yAxis: 1,
+              color: Highcharts.getOptions().colors[6],
+              data: $scope.serise3
+            },
+            {
+              name: 'Set CP',
+              yAxis: 1,
+              color: Highcharts.getOptions().colors[6],
+              data: $scope.serise4
+            },
+          ]
+        };
+      });
+  </script>
+
+  <table style="font-weight: bold;">
+
+    <label>{{dataFromAPI}}</label>
+    <tr>
+      <td>Time From : </td>
+      <td><input ng-model="form.dateFrom" type="text" placeholder="yyyy-mm-dd hh:mm:ss" value="2022-04-15 12:46:00"></td>
+    </tr>
+    <tr>
+      <td>Time To : </td>
+      <td><input ng-model="form.dateTo" type="text" placeholder="yyyy-mm-dd hh:mm:ss" value="2022-04-15 12:49:00"></td>
+    </tr>
+    <tr>
+      <td>Furnace : </td>
+
+      <td>
+        <select ng-model="form.channels">
+
+          <option ng-repeat="furnaceName in furnaceNames" value="{{furnaceName.channels}}"> {{furnaceName.name}} - ({{furnaceName.channels}})
+          </option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Customer : </td>
+      <td> <input ng-model="form.customer" size="10"></td>
+    </tr>
+    <tr>
+      <td>Material: </td>
+      <td> <input ng-model="form.material" size="10"></td>
+    </tr>
+    <tr>
+      <td>Part Name : </td>
+      <td> <input ng-model="form.partName" size="10"></td>
+    </tr>
+    <tr>
+      <td>Part No : </td>
+      <td> <input ng-model="form.partNumber" size="10"></td>
+    </tr>
+    <tr>
+      <td>Process : </td>
+      <td> <input ng-model="form.process" size="10"></td>
+    </tr>
+    <tr>
+      <td>Batch Qty : </td>
+      <td> <input ng-model="form.batchQuantity" size="10"></td>
+    </tr>
+    <tr>
+      <td>Batch No : </td>
+      <td> <input ng-model="form.batchNumber" size="10"></td>
+    </tr>
+    <tr>
+      <td>Batch Date : </td>
+      <td> <input ng-model="form.batchDate" size="10"></td>
+    </tr>
+    <tr>
+      <td>Furnace : </td>
+      <td> <input ng-model="form.furnace" size="10"></td>
+    </tr>
+    <tr>
+      <td>Loading Time : </td>
+      <td> <input ng-model="form.loadTime" size="10"></td>
+    </tr>
+    <tr>
+      <td>Set Temp : </td>
+      <td> <input ng-model="form.setTemperature" size="10"></td>
+    </tr>
+    <tr>
+      <td>Soaking Start : </td>
+      <td> <input ng-model="form.soakingStart" size="10"></td>
+    </tr>
+    <tr>
+      <td>Soaking End : </td>
+      <td> <input ng-model="form.soakingEnd" size="10"></td>
+    </tr>
+    <tr>
+      <td>Total Soaking Time : </td>
+      <td> <input ng-model="form.totalSoakingTime" size="10"></td>
+    </tr>
+    <tr>
+      <td>Unloading Time : </td>
+      <td> <input ng-model="form.unloadTime" size="10"></td>
+    </tr>
+    <tr>
+      <td><input type="button" ng-click="myFunc()"></td>
+    </tr>
+    <tr>
+      <td><button id='save_btn'>Save Chart</button></td>
+    </tr>
+
+  </table>
+</body>
+
+</html>
